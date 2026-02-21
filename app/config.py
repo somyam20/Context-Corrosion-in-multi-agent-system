@@ -8,6 +8,7 @@ import numpy as np
 from dotenv import load_dotenv
 load_dotenv()
 
+
 # ── Reproducibility ──────────────────────────────────────────────────────────
 RANDOM_SEED = 42
 random.seed(RANDOM_SEED)
@@ -18,8 +19,12 @@ GEMINI_API_KEY: str = os.environ.get("GEMINI_API_KEY", "")
 GEMINI_MODEL: str = "gemini-2.5-flash"
 
 # ── Agent structural parameters ───────────────────────────────────────────────
-DOMINANT_MAX_TOKENS: int = 800
-PEER_MAX_TOKENS: int = 200
+DOMINANT_MAX_TOKENS: int = 1500
+PEER_MAX_TOKENS: int = 600
+
+# Separate limits for structured phases (JSON required) vs free-form discussion.
+DOMINANT_JSON_MAX_TOKENS: int = 1500
+PEER_JSON_MAX_TOKENS: int = 1200  # Increased: final_vote prompt includes full discussion history
 
 DOMINANT_AGENT_ID: str = "D"
 PEER_AGENT_IDS: list[str] = ["P1", "P2", "P3", "P4"]
@@ -37,10 +42,25 @@ os.makedirs(EXPERIMENTS_DIR, exist_ok=True)
 os.makedirs(CHROMA_DIR, exist_ok=True)
 
 # ── Base system prompt (identical for ALL agents) ────────────────────────────
+# Fix 3: Enforce compact JSON responses to prevent token-limit truncation.
+# The critical instruction is "No markdown code fences" — the model wrapping
+# JSON in ```json...``` burns ~15 tokens before the content even starts.
 BASE_SYSTEM_PROMPT: str = (
     "You are an expert analyst participating in a structured deliberation. "
     "Reason carefully, present your perspective, and engage critically with others' views. "
     "Be concise but thorough. Always back your positions with clear reasoning."
+)
+
+# Appended to ALL structured-JSON prompts (phases 1 and 3) for every agent.
+# Separated so it can be updated independently without touching the base prompt.
+JSON_FORMAT_INSTRUCTION: str = (
+    "CRITICAL OUTPUT RULES:\n"
+    "- Respond with ONLY a valid JSON object. Nothing else.\n"
+    "- Do NOT wrap in markdown code fences (no ```json, no ```).\n"
+    "- Do NOT include any preamble, explanation, or trailing text.\n"
+    "- Keep all string values short and direct.\n"
+    "- key_points must have exactly 2-3 items, each under 20 words.\n"
+    "- Your entire response must be a single parseable JSON object."
 )
 
 # ── Ambiguous task templates ──────────────────────────────────────────────────
