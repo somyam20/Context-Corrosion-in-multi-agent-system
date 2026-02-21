@@ -1,8 +1,19 @@
+# fastapi
+# uvicorn[standard]
+# google-generativeai
+# sentence-transformers
+# scikit-learn
+# numpy
+# matplotlib
+# chromadb
+# pydantic
+# python-multipart
 fastapi
 uvicorn[standard]
 google-generativeai
 sentence-transformers
 scikit-learn
+scipy
 numpy
 matplotlib
 chromadb

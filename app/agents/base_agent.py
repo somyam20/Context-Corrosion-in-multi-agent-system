@@ -11,7 +11,7 @@ import logging
 import re
 from typing import Any
 
-import google.genai as genai
+import google.generativeai as genai
 
 from app.config import (
     BASE_SYSTEM_PROMPT,
